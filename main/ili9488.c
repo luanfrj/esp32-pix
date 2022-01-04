@@ -1,0 +1,282 @@
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "sdkconfig.h"
+#include "ili9488.h"
+#include "font_table.h"
+
+/* 
+ * Realiza o setup dos pinos de comunicação com o display LCD
+ */
+void setup_lcd_pins()
+{
+    gpio_pad_select_gpio(LCD_DATA_BIT0);
+    gpio_pad_select_gpio(LCD_DATA_BIT1);
+    gpio_pad_select_gpio(LCD_DATA_BIT2);
+    gpio_pad_select_gpio(LCD_DATA_BIT3);
+    gpio_pad_select_gpio(LCD_DATA_BIT4);
+    gpio_pad_select_gpio(LCD_DATA_BIT5);
+    gpio_pad_select_gpio(LCD_DATA_BIT6);
+    gpio_pad_select_gpio(LCD_DATA_BIT7);
+    gpio_pad_select_gpio(LCD_RST);
+    gpio_pad_select_gpio(LCD_CS);
+    gpio_pad_select_gpio(LCD_RS);
+    gpio_pad_select_gpio(LCD_WR);
+    gpio_pad_select_gpio(LCD_RD);
+
+    gpio_set_direction(LCD_DATA_BIT0, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT2, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT3, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT4, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT5, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT6, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_DATA_BIT7, GPIO_MODE_OUTPUT);
+
+    gpio_set_direction(LCD_RST, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_CS, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_RS, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_WR, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_RD, GPIO_MODE_OUTPUT);
+}
+
+/* 
+ * Copia um byte para os GPIOs especificados
+ */
+void copy_data_to_gpio(unsigned char byte_data)
+{
+    gpio_set_level(LCD_DATA_BIT7, (byte_data & 0x80) >> 7);
+    gpio_set_level(LCD_DATA_BIT6, (byte_data & 0x40) >> 6);
+    gpio_set_level(LCD_DATA_BIT5, (byte_data & 0x20) >> 5);
+    gpio_set_level(LCD_DATA_BIT4, (byte_data & 0x10) >> 4);
+    gpio_set_level(LCD_DATA_BIT3, (byte_data & 0x08) >> 3);
+    gpio_set_level(LCD_DATA_BIT2, (byte_data & 0x04) >> 2);
+    gpio_set_level(LCD_DATA_BIT1, (byte_data & 0x02) >> 1);
+    gpio_set_level(LCD_DATA_BIT0, (byte_data & 0x01));
+}
+
+/* 
+ * Envia um comando para o LCD
+ */
+void send_command(unsigned char cmd)
+{
+    gpio_set_level(LCD_RST, 1);
+    gpio_set_level(LCD_CS, 0);
+    gpio_set_level(LCD_RS, 0);
+    gpio_set_level(LCD_WR, 0);
+    gpio_set_level(LCD_RD, 1);
+    copy_data_to_gpio(cmd);
+    gpio_set_level(LCD_WR, 1);
+}
+
+/* 
+ * Envia um dado para o LCD
+ */
+void send_data(unsigned char data)
+{
+    gpio_set_level(LCD_RST, 1);
+    gpio_set_level(LCD_CS, 0);
+    gpio_set_level(LCD_RS, 1);
+    gpio_set_level(LCD_WR, 0);
+    gpio_set_level(LCD_RD, 1);
+    copy_data_to_gpio(data);
+    gpio_set_level(LCD_WR, 1);
+}
+
+// set bg collor
+void set_bgcolor(unsigned char r, unsigned char g, unsigned char b)
+{
+    unsigned short i, j;
+     // write data command
+    send_command(0x2C);
+    
+    // send color
+    for (i = 0; i < 320; i++)
+    {
+        for (j = 0; j < 480; j++)
+        {
+            send_data(r);
+            send_data(g);
+            send_data(b);
+        }
+    }
+}
+
+// set address
+void set_address(unsigned short x, unsigned short y)
+{
+    unsigned char xt, xb, yt, yb;
+    
+    xt = (x >> 8) & 0xFF;
+    xb = x & 0xFF;
+    
+    yt = (y >> 8) & 0xFF;
+    yb = y & 0xFF;
+    
+    gpio_set_level(LCD_CS, 0);
+    
+    // set cursor
+    send_command(0x2A);
+    // set start x
+    send_data(xt);
+    send_data(xb);
+    // set end x
+    send_data(xt);
+    send_data(xb);
+    send_command(0x00);
+    
+    send_command(0x2B);
+    // set start y
+    send_data(yt);
+    send_data(yb);
+    // set end y
+    send_data(yt);
+    send_data(yb);
+    send_command(0x00);
+}
+
+// write pixel at position
+void write_pixel(unsigned short x, unsigned short y, unsigned char r, unsigned char g, unsigned char b)
+{
+    set_address(x, y);
+    gpio_set_level(LCD_CS, 0);
+    send_command(0x2C);
+    send_data(r);
+    send_data(g);
+    send_data(b); 
+}
+
+// write char row
+void write_row(unsigned char rt, unsigned char rb, 
+        unsigned short x, unsigned short y, 
+        unsigned char r, unsigned char g, unsigned char b)
+{
+    unsigned short row;
+    unsigned char i;
+    row = (rt << 8) | (rb);
+    
+    gpio_set_level(LCD_CS, 0);
+    for (i = 0; i < 10; i++)
+    {
+        if (row > 32767)
+        {
+            write_pixel(x, y, r, g, b);
+        }
+        x++;
+        row = row << 1;
+    }
+}
+
+// write character at position
+void write_char(char c, unsigned short x, unsigned short y, 
+        unsigned char r, unsigned char g, unsigned char b)
+{
+    unsigned short base = (c - ' ') * 30;
+    unsigned char i, rt, rb;
+    
+    for (i = 0; i < 15; i++)
+    {
+        rt = courierNew_12ptBitmaps[base + 2*i];
+        rb = courierNew_12ptBitmaps[base + 2*i + 1];
+        write_row(rt, rb, x, y, r, g, b);
+        y++;
+    }
+    
+}
+
+// write string
+void write_string(char *str, 
+        unsigned short x, unsigned short y,
+        unsigned char r, unsigned char g, unsigned char b)
+{
+    while(*str)
+    {
+        write_char(*str, x, y, r, g, b);
+        x += 10;
+        str++;
+    }
+}
+
+void delay_ms(unsigned int ms) 
+{
+    vTaskDelay(ms / portTICK_PERIOD_MS);
+}
+
+// init lcd
+void init_lcd()
+{
+    // reset LCD
+    gpio_set_level(LCD_RST, 0);
+    delay_ms(100);
+    gpio_set_level(LCD_RST, 1);
+    
+    // software reset
+    send_command(0x01);
+    delay_ms(100);
+    
+    // sleep out
+    send_command(0x11);
+    delay_ms(100);
+    
+    // memory acces control
+    send_command(0x36);
+    send_data(0x48);
+    delay_ms(100);
+    
+    // set dbi
+    send_command(0x3A);
+    send_data(0x77);
+    delay_ms(100);
+    
+    // partial mode on
+    send_command(0x13);
+    delay_ms(100);
+    
+    // display on
+    send_command(0x29);
+    delay_ms(100);
+    
+    // set cursor
+    send_command(0x2A);
+    // set start x
+    send_data(0x00);
+    send_data(0x00);
+    // set end x
+    send_data(0x01);
+    send_data(0x3F);
+    send_command(0x00);
+    
+    send_command(0x2B);
+    // set start y
+    send_data(0x00);
+    send_data(0x00);
+    // set end y
+    send_data(0x01);
+    send_data(0xDF);
+    send_command(0x00);
+    
+    delay_ms(100);
+   
+    // set brightness
+    send_command(0x51);
+    send_data(0x0F);
+    delay_ms(100);
+    
+    // set brightness control
+    send_command(0x53);
+    send_data(0x2C);
+    delay_ms(100);
+    
+    // set framerate
+    send_command(0xB1);
+    send_data(0xA0);
+    send_data(0x11);
+    delay_ms(50);
+    
+    set_bgcolor(0, 0, 0);
+    
+    gpio_set_level(LCD_CS, 0);
+    delay_ms(100);
+    
+}
