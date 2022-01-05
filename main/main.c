@@ -59,15 +59,22 @@ static void printQr(const uint8_t qrcode[])
 {
 	int size = qrcodegen_getSize(qrcode);
   printf("Size: %d\n", size);
-	int border = 4;
+	char border = 4;
+  char module_size = 4;
+  unsigned char r, g, b;
 	for (int y = -border; y < size + border; y++) 
   {
 		for (int x = -border; x < size + border; x++) 
     {
       if (qrcodegen_getModule(qrcode, x, y)) {
-        write_pixel(x, y, 255, 255, 255);
+        r = g = b = 0;
       } else {
-        write_pixel(x, y, 0, 0, 0);
+        r = g = b = 255;
+      }
+      for (int i = 0; i < module_size; i++) {
+        for (int j = 0; j < module_size; j++) {
+          write_pixel((x+4)*module_size + j, (y+4)*module_size + i + 80, r, g, b);
+        }
       }
 		}
 	}
