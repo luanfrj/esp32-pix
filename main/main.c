@@ -42,8 +42,6 @@ void app_main()
   printf("Iniciando LCD\n");
   
   init_lcd();
-
-  gpio_set_level(LCD_CS, 0);
   
   const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/73055cb8-ceb7-4c9a-8328-298b0630c6c85204000053039865802BR5904Luan6009SAO PAULO62070503***63042300";
   uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
@@ -53,6 +51,7 @@ void app_main()
     qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
   if (ok)
     printQr(qrcode);
+  printf("QR Code gerado e Impresso\n");
 }
 
 static void printQr(const uint8_t qrcode[]) 
@@ -73,7 +72,7 @@ static void printQr(const uint8_t qrcode[])
       }
       for (int i = 0; i < module_size; i++) {
         for (int j = 0; j < module_size; j++) {
-          write_pixel((x+4)*module_size + j, (y+4)*module_size + i + 80, r, g, b);
+          write_pixel((x+4)*module_size + j + 6, (y+4)*module_size + i + 86, r, g, b);
         }
       }
 		}

@@ -1,19 +1,19 @@
 #include <stdio.h>
 
-#define LCD_DATA_BIT0   12
-#define LCD_DATA_BIT1   13
-#define LCD_DATA_BIT2   27
-#define LCD_DATA_BIT3   14
-#define LCD_DATA_BIT4   25
-#define LCD_DATA_BIT5   26
-#define LCD_DATA_BIT6   32
-#define LCD_DATA_BIT7   33
+#define LCD_DATA_BIT0   2
+#define LCD_DATA_BIT1   4
+#define LCD_DATA_BIT2   16
+#define LCD_DATA_BIT3   17
+#define LCD_DATA_BIT4   5
+#define LCD_DATA_BIT5   18
+#define LCD_DATA_BIT6   19
+#define LCD_DATA_BIT7   21
 
-#define LCD_RST	        2       // Reset  
-#define LCD_CS	        4       // Chip select 0 - Selected 1 - Not selected
-#define LCD_RS	        17      // 0 - Command 1 - Data
-#define LCD_WR	        18      // Rise edge write
-#define LCD_RD	        21      // Rise edge read
+#define LCD_RST	        12       // Reset  
+#define LCD_CS	        13       // Chip select 0 - Selected 1 - Not selected
+#define LCD_RS	        14      // 0 - Command 1 - Data
+#define LCD_WR	        27      // Rise edge write
+#define LCD_RD	        26      // Rise edge read
 
 void setup_lcd_pins();
 
