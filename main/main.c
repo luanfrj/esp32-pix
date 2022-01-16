@@ -20,6 +20,7 @@
 #include "sdkconfig.h"
 #include "ili9488.h"
 #include "qrcodegen.h"
+#include "wifi_station.h"
 
 static void printQr(const uint8_t qrcode[]);
 
@@ -42,8 +43,21 @@ void app_main()
   printf("Iniciando LCD\n");
   
   init_lcd();
+
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
+
+  ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+  wifi_init_sta();
+
+  write_string("WiFi Conectado", 10, 10, 255, 255, 255);
   
-  const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/73055cb8-ceb7-4c9a-8328-298b0630c6c85204000053039865802BR5904Luan6009SAO PAULO62070503***63042300";
+  /*
+  const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/e7bbf642-20fe-41ab-99e4-95382c4da2845204000053039865802BR5904Luan6009SAO PAULO62070503***6304C5BD";
   uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
   uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
   printf("Gerando QR Code\n");
@@ -52,6 +66,9 @@ void app_main()
   if (ok)
     printQr(qrcode);
   printf("QR Code gerado e Impresso\n");
+
+  write_string("HELLO WORLD! BRASIL", 10, 450, 255, 0, 0);
+  */
 }
 
 static void printQr(const uint8_t qrcode[]) 
