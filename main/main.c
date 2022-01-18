@@ -21,6 +21,22 @@
 #include "ili9488.h"
 #include "qrcodegen.h"
 #include "wifi_station.h"
+#include "http_client.h"
+
+#define STATUS_WAIT_USER_INPUT  0
+#define STATUS_REQUEST_QRCODE   1
+#define STATUS_CHECK_PAYMENT    2
+#define STATUS_ACTUATE_ON_GPIO  3
+
+uint8_t current_status;
+uint32_t tickNumber = 0;
+uint8_t segundos = 0;
+uint8_t minutos = 0;
+uint8_t horas = 0;
+
+bool  inTick = false;
+
+void tickFunc(void);
 
 static void printQr(const uint8_t qrcode[]);
 
@@ -55,9 +71,18 @@ void app_main()
   wifi_init_sta();
 
   write_string("WiFi Conectado", 10, 10, 255, 255, 255);
+
+  ESP_LOGI(TAG, "Connected to AP, begin http example");
+
+  write_string("Enviando request", 10, 30, 0, 0, 255);
+
+  char buffer[300];
+  https_with_hostname_path(buffer);
+
+  //printf("Resposta %s", buffer);
+  //write_string(buffer, 10, 42, 255, 0, 0);
   
-  /*
-  const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/e7bbf642-20fe-41ab-99e4-95382c4da2845204000053039865802BR5904Luan6009SAO PAULO62070503***6304C5BD";
+  const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/c5231ccc-9dbd-4cbf-bc47-1dc2530bfd8d5204000053039865802BR5904Luan6009SAO PAULO62070503***6304E64F";
   uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
   uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
   printf("Gerando QR Code\n");
@@ -68,7 +93,51 @@ void app_main()
   printf("QR Code gerado e Impresso\n");
 
   write_string("HELLO WORLD! BRASIL", 10, 450, 255, 0, 0);
-  */
+
+  current_status = STATUS_WAIT_USER_INPUT;
+
+  while(1) 
+  {
+    if (!inTick) {
+      tickFunc();
+    }
+  }
+
+}
+
+void tickFunc(void)
+{
+  inTick = true;
+  tickNumber++;
+
+  char info[20];
+
+  if (tickNumber == 1000) {
+    tickNumber = 0;
+    segundos++;
+    if (segundos == 60) {
+      segundos = 0;
+      minutos++;
+      if (minutos == 60) {
+        minutos = 0;
+        horas++;
+      }
+    }
+    sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
+    write_string(info, 30, 400, 0, 255, 0);
+  }
+
+  // if ()
+  // switch (current_status)
+  // {
+  //   case STATUS_WAIT_USER_INPUT:
+  //     /* code */
+  //     break;
+    
+  //   default:
+  //     break;
+  // }
+  inTick = false;
 }
 
 static void printQr(const uint8_t qrcode[]) 
