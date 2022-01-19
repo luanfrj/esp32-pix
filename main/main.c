@@ -17,6 +17,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
+#include "driver/timer.h"
 #include "sdkconfig.h"
 #include "ili9488.h"
 #include "qrcodegen.h"
@@ -34,11 +35,13 @@ uint8_t segundos = 0;
 uint8_t minutos = 0;
 uint8_t horas = 0;
 
-bool  inTick = false;
+static const char *TAG = "Main";
 
-void tickFunc(void);
+void IRAM_ATTR timer_tick_func(void *para);
 
 static void printQr(const uint8_t qrcode[]);
+
+static void timer_configure(void);
 
 void app_main()
 {
@@ -76,55 +79,92 @@ void app_main()
 
   write_string("Enviando request", 10, 30, 0, 0, 255);
 
-  char buffer[300];
-  https_with_hostname_path(buffer);
+  char *buffer = malloc(300);
+  http_get_qrcode(buffer);
 
-  //printf("Resposta %s", buffer);
-  //write_string(buffer, 10, 42, 255, 0, 0);
-  
-  const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/c5231ccc-9dbd-4cbf-bc47-1dc2530bfd8d5204000053039865802BR5904Luan6009SAO PAULO62070503***6304E64F";
+  ESP_LOGI(TAG, "QR CODE: %s", buffer);
+
+  //const char *text = "00020101021226940014BR.GOV.BCB.PIX2572pix-qr.mercadopago.com/instore/o/v2/c5231ccc-9dbd-4cbf-bc47-1dc2530bfd8d5204000053039865802BR5904Luan6009SAO PAULO62070503***6304E64F";
   uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
   uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
   printf("Gerando QR Code\n");
-  bool ok = qrcodegen_encodeText(text, tempBuffer, qrcode,
+  bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
     qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
   if (ok)
     printQr(qrcode);
   printf("QR Code gerado e Impresso\n");
 
-  write_string("HELLO WORLD! BRASIL", 10, 450, 255, 0, 0);
+  free(buffer);
 
   current_status = STATUS_WAIT_USER_INPUT;
 
+  timer_configure();
+
   while(1) 
   {
-    if (!inTick) {
-      tickFunc();
-    }
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 
 }
 
-void tickFunc(void)
+static void timer_configure(void)
 {
-  inTick = true;
-  tickNumber++;
+  int timer_group = TIMER_GROUP_0;
+  int timer_idx = TIMER_0;
 
-  char info[20];
+  timer_config_t config;
+  config.alarm_en = 1;
+  config.auto_reload = 1;
+  config.counter_dir = TIMER_COUNT_UP;
+  config.divider = 80;
+  config.intr_type = TIMER_INTR_LEVEL;
+  config.counter_en = TIMER_PAUSE;
 
-  if (tickNumber == 1000) {
-    tickNumber = 0;
-    segundos++;
-    if (segundos == 60) {
-      segundos = 0;
-      minutos++;
-      if (minutos == 60) {
-        minutos = 0;
-        horas++;
+  /*Configure timer*/
+  timer_init(TIMER_GROUP_0, TIMER_0, &config);
+  /*Stop timer counter*/
+  timer_pause(TIMER_GROUP_0, TIMER_0);
+  /*Load counter value */
+  timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0x00000000ULL);
+  /*Set alarm value*/
+  timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, 1000);
+  /*Enable timer interrupt*/
+  timer_enable_intr(TIMER_GROUP_0, TIMER_0);
+  /*Set ISR handler*/
+  timer_isr_register(TIMER_GROUP_0, TIMER_0, timer_tick_func, (void*) timer_idx, ESP_INTR_FLAG_IRAM, NULL);
+  /*Start timer counter*/
+  timer_start(TIMER_GROUP_0, TIMER_0);
+}
+
+void IRAM_ATTR timer_tick_func(void *para)
+{
+  int timer_idx = (int) para;
+  uint32_t intr_status = TIMERG0.int_st_timers.val;
+
+  if((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) 
+  {
+    TIMERG0.hw_timer[timer_idx].update = 1;
+    TIMERG0.int_clr_timers.t0 = 1;
+
+    tickNumber++;
+
+    char info[20];
+
+    if (tickNumber == 1000) {
+      tickNumber = 0;
+      segundos++;
+      if (segundos == 60) {
+        segundos = 0;
+        minutos++;
+        if (minutos == 60) {
+          minutos = 0;
+          horas++;
+        }
       }
+      sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
+      write_string(info, 30, 400, 0, 255, 0);
     }
-    sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
-    write_string(info, 30, 400, 0, 255, 0);
+    TIMERG0.hw_timer[timer_idx].config.alarm_en = 1;
   }
 
   // if ()
@@ -137,7 +177,6 @@ void tickFunc(void)
   //   default:
   //     break;
   // }
-  inTick = false;
 }
 
 static void printQr(const uint8_t qrcode[]) 

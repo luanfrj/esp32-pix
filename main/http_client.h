@@ -13,8 +13,6 @@
 #define MAX_HTTP_RECV_BUFFER 512
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 
-extern const char *TAG;
-
 /* Root cert for howsmyssl.com, taken from howsmyssl_com_root_cert.pem
 
    The PEM file was extracted from the output of this command:
@@ -27,5 +25,7 @@ extern const char *TAG;
 */
 extern const char luan_eng_br_pem_start[] asm("_binary_luan_eng_br_pem_start");
 extern const char luan_eng_br_pem_end[]   asm("_binary_luan_eng_br_pem_end");
+
+void http_get_qrcode(char *buffer);
 
 void https_with_hostname_path(char *buffer);

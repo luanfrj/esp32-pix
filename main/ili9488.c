@@ -204,6 +204,8 @@ void write_row(unsigned char rt, unsigned char rb,
         if (row > 32767)
         {
             write_pixel(x, y, r, g, b);
+        } else {
+            write_pixel(x, y, 0, 0, 0);
         }
         x++;
         row = row << 1;
