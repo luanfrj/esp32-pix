@@ -35,6 +35,8 @@ uint8_t segundos = 0;
 uint8_t minutos = 0;
 uint8_t horas = 0;
 
+bool generate_qrcode;
+
 static const char *TAG = "Main";
 
 void IRAM_ATTR timer_tick_func(void *para);
@@ -69,29 +71,34 @@ void app_main()
   write_string("Enviando request", 10, 30, 0, 0, 255);
 
   char *buffer = malloc(300);
-  http_get_qrcode(buffer);
-
-  ESP_LOGI(TAG, "QR CODE: %s", buffer);
-
   uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
   uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
-  printf("Gerando QR Code\n");
-  bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
-    qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
-  if (ok)
-    print_qrcode(qrcode);
-  printf("QR Code gerado e Impresso\n");
-
-  free(buffer);
 
   current_status = STATUS_WAIT_USER_INPUT;
 
   timer_configure();
 
+  generate_qrcode = false;
+
   while(1) 
   {
     vTaskDelay(100 / portTICK_PERIOD_MS);
+    if (current_status == STATUS_REQUEST_QRCODE && generate_qrcode == true) 
+    {
+      generate_qrcode = false;
+      http_get_qrcode(buffer);
+      ESP_LOGI(TAG, "QR CODE: %s", buffer);
+      ESP_LOGI(TAG, "Gerando QR Code...");
+      bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
+        qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+      if (ok) {
+        print_qrcode(qrcode);
+      }
+      ESP_LOGI(TAG, "QR Code gerado e Impresso");
+      current_status = STATUS_CHECK_PAYMENT;
+    }
   }
+  free(buffer);
 
 }
 
@@ -157,24 +164,11 @@ void IRAM_ATTR timer_tick_func(void *para)
         }
         if (minutos == 2) {
           current_status = STATUS_REQUEST_QRCODE;
+          generate_qrcode = true;
         }
         break;
       case STATUS_REQUEST_QRCODE:
-        
-        // http_get_qrcode(buffer);
 
-        // ESP_LOGI(TAG, "QR CODE: %s", buffer);
-        // uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
-        // uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
-        // ESP_LOGI(TAG, "Gerando QR Code\n");
-        // bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
-        //   qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
-        // if (ok) {
-        //   print_qrcode(qrcode);
-        // }
-        // ESP_LOGI(TAG, "QR Code gerado e Impresso\n");
-        
-        // current_status = STATUS_CHECK_PAYMENT;
         break;
       default:
         break;
@@ -183,22 +177,11 @@ void IRAM_ATTR timer_tick_func(void *para)
     TIMERG0.hw_timer[timer_idx].config.alarm_en = 1;
   }
 
-  // if ()
-  // switch (current_status)
-  // {
-  //   case STATUS_WAIT_USER_INPUT:
-  //     /* code */
-  //     break;
-    
-  //   default:
-  //     break;
-  // }
 }
 
 static void print_qrcode(const uint8_t qrcode[]) 
 {
 	int size = qrcodegen_getSize(qrcode);
-  printf("Size: %d\n", size);
 	char border = 4;
   char module_size = 4;
   unsigned char r, g, b;
