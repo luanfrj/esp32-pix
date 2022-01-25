@@ -23,11 +23,14 @@
 #include "qrcodegen.h"
 #include "wifi_station.h"
 #include "http_client.h"
+#include "esp_task_wdt.h"
 
 #define STATUS_WAIT_USER_INPUT  0
 #define STATUS_REQUEST_QRCODE   1
 #define STATUS_CHECK_PAYMENT    2
 #define STATUS_ACTUATE_ON_GPIO  3
+
+#define BUTTON_INPUT            0
 
 uint8_t current_status;
 uint32_t tickNumber = 0;
@@ -35,7 +38,12 @@ uint8_t segundos = 0;
 uint8_t minutos = 0;
 uint8_t horas = 0;
 
+uint8_t order_status;
+
 bool generate_qrcode;
+bool get_order_status;
+
+char info[20];
 
 static const char *TAG = "Main";
 
@@ -47,10 +55,13 @@ static void timer_configure(void);
 
 void app_main()
 {
+  // Define o botão de entrada
+  gpio_set_direction(BUTTON_INPUT, GPIO_MODE_INPUT);
+
   setup_lcd_pins();
   delay_ms(100);
 
-  printf("Iniciando LCD\n");
+  ESP_LOGI(TAG,"Iniciando LCD");
   
   init_lcd();
 
@@ -66,11 +77,7 @@ void app_main()
 
   write_string("WiFi Conectado", 10, 10, 255, 255, 255);
 
-  ESP_LOGI(TAG, "Connected to AP, begin http example");
-
-  write_string("Enviando request", 10, 30, 0, 0, 255);
-
-  char *buffer = malloc(300);
+  char *buffer;
   uint8_t qrcode[qrcodegen_BUFFER_LEN_MAX];
   uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
 
@@ -80,31 +87,107 @@ void app_main()
 
   generate_qrcode = false;
 
+  tickNumber = 0;
+
   while(1) 
   {
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    if (current_status == STATUS_REQUEST_QRCODE && generate_qrcode == true) 
+    //vTaskDelay(100 / portTICK_PERIOD_MS);
+    vTaskDelay(1);
+    switch (current_status)
     {
-      generate_qrcode = false;
-      http_get_qrcode(buffer);
-      ESP_LOGI(TAG, "QR CODE: %s", buffer);
-      ESP_LOGI(TAG, "Gerando QR Code...");
-      bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
-        qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
-      if (ok) {
-        print_qrcode(qrcode);
-      }
-      ESP_LOGI(TAG, "QR Code gerado e Impresso");
-      current_status = STATUS_CHECK_PAYMENT;
+      case STATUS_WAIT_USER_INPUT:
+        if (gpio_get_level(BUTTON_INPUT) == 0) 
+        {
+          if (tickNumber == 50) {
+            current_status = STATUS_REQUEST_QRCODE;
+            generate_qrcode = true;
+          }
+        } else {
+          tickNumber = 0;
+        }
+        break;
+      case STATUS_REQUEST_QRCODE:
+        buffer = malloc(300);
+        http_get_qrcode(buffer);
+        ESP_LOGI(TAG, "QR CODE: %s", buffer);
+        ESP_LOGI(TAG, "Gerando QR Code...");
+        bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
+          qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+        free(buffer);
+        if (ok) {
+          print_qrcode(qrcode);
+        }
+        ESP_LOGI(TAG, "QR Code gerado e Impresso");
+        current_status = STATUS_CHECK_PAYMENT;
+        tickNumber = 0;
+        break;
+      case STATUS_CHECK_PAYMENT:
+        if (tickNumber > 1000) {
+          ESP_LOGI(TAG, "STATUS_CHECK_PAYMENT");
+          tickNumber = 0;
+          segundos++;
+          if (segundos == 60) {
+            segundos = 0;
+            minutos++;
+            if (minutos == 60) {
+              minutos = 0;
+              horas++;
+            }
+          }
+          
+          sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
+          write_string(info, 30, 400, 0, 255, 0);
+          if (segundos % 10 == 0) {
+            get_order_status = false;
+            ESP_LOGI(TAG, "Verficando Pagamento");
+            order_status = http_get_order_status(1);
+            if (order_status == 1) {
+              ESP_LOGI(TAG, "Pagamento efetuado");
+            } else {
+              ESP_LOGI(TAG, "Pagamento não efetuado");
+            }
+          }
+        }
+        if (minutos == 2) {
+          current_status = STATUS_WAIT_USER_INPUT;
+        }
+        break;
+      default:
+        break;
     }
+    // if (current_status == STATUS_REQUEST_QRCODE && generate_qrcode == true) 
+    // {
+    //   generate_qrcode = false;
+    //   http_get_qrcode(buffer);
+    //   ESP_LOGI(TAG, "QR CODE: %s", buffer);
+    //   ESP_LOGI(TAG, "Gerando QR Code...");
+    //   bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
+    //     qrcodegen_Ecc_HIGH, qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+    //   if (ok) {
+    //     print_qrcode(qrcode);
+    //   }
+    //   ESP_LOGI(TAG, "QR Code gerado e Impresso");
+    //   current_status = STATUS_CHECK_PAYMENT;
+    // }
+
+    // if (current_status == STATUS_CHECK_PAYMENT && get_order_status == true)
+    // {
+    //   get_order_status = false;
+    //   ESP_LOGI(TAG, "Verficando Pagamento");
+    //   order_status = http_get_order_status(1);
+    //   if (order_status == 1) {
+    //     ESP_LOGI(TAG, "Pagamento efetuado");
+    //   } else {
+    //     ESP_LOGI(TAG, "Pagamento não efetuado");
+    //   }
+    // }
   }
-  free(buffer);
 
 }
 
 static void timer_configure(void)
 {
-  int timer_group = TIMER_GROUP_0;
+  //int timer_group = TIMER_GROUP_0;
   int timer_idx = TIMER_0;
 
   timer_config_t config;
@@ -143,36 +226,53 @@ void IRAM_ATTR timer_tick_func(void *para)
 
     tickNumber++;
 
-    char info[20];
+    // esp_task_wdt_reset();
 
-    switch (current_status)
-    {
-      case STATUS_WAIT_USER_INPUT:
-        if (tickNumber == 1000) {
-          tickNumber = 0;
-          segundos++;
-          if (segundos == 60) {
-            segundos = 0;
-            minutos++;
-            if (minutos == 60) {
-              minutos = 0;
-              horas++;
-            }
-          }
-          sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
-          write_string(info, 30, 400, 0, 255, 0);
-        }
-        if (minutos == 2) {
-          current_status = STATUS_REQUEST_QRCODE;
-          generate_qrcode = true;
-        }
-        break;
-      case STATUS_REQUEST_QRCODE:
+    // char info[20];
 
-        break;
-      default:
-        break;
-    }
+    // switch (current_status)
+    // {
+    //   case STATUS_WAIT_USER_INPUT:
+
+    //     if (gpio_get_level(BUTTON_INPUT) == 0) 
+    //     {
+    //       tickNumber++;
+    //       if (tickNumber == 50) {
+    //         current_status = STATUS_REQUEST_QRCODE;
+    //         generate_qrcode = true;
+    //       }
+    //     } else {
+    //       tickNumber = 0;
+    //     }
+    //     break;
+    //   case STATUS_REQUEST_QRCODE:
+    //     break;
+    //   case STATUS_CHECK_PAYMENT:
+    //     tickNumber++;
+    //     if (tickNumber == 1000) {
+    //       tickNumber = 0;
+    //       segundos++;
+    //       if (segundos == 60) {
+    //         segundos = 0;
+    //         minutos++;
+    //         if (minutos == 60) {
+    //           minutos = 0;
+    //           horas++;
+    //         }
+    //       }
+          
+    //       // sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
+    //       // write_string(info, 30, 400, 0, 255, 0);
+    //     }
+    //     if (segundos % 10 == 0 && tickNumber == 0) {
+    //       get_order_status = true;
+    //     }
+    //     if (minutos == 2) {
+    //       current_status = STATUS_WAIT_USER_INPUT;
+    //     }
+    //   default:
+    //     break;
+    // }
     
     TIMERG0.hw_timer[timer_idx].config.alarm_en = 1;
   }
