@@ -21,6 +21,8 @@ void init_lcd();
 
 void delay_ms(unsigned int ms);
 
+void set_bgcolor(unsigned char r, unsigned char g, unsigned char b);
+
 void write_pixel(unsigned short x, unsigned short y,
     unsigned char r, unsigned char g, unsigned char b);
 

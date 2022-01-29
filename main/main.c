@@ -46,7 +46,7 @@ uint8_t order_status;
 bool generate_qrcode;
 bool get_order_status;
 
-char info[20];
+char info[30];
 
 uint32_t last_id;
 
@@ -61,6 +61,12 @@ static void timer_configure(void);
 uint32_t read_nvs_data(nvs_handle_t *nvs_handle);
 
 void save_nvs_data(nvs_handle_t *nvs_handle, uint32_t data);
+
+void print_last_order(char * info, uint32_t last_order)
+{
+  sprintf(info, "Ultima Compra: %d", last_order);
+  write_string(info, 10, 465, 0, 0, 255);
+}
 
 void app_main()
 {
@@ -95,8 +101,7 @@ void app_main()
 
   last_id = read_nvs_data(&nvs_handle);
 
-  sprintf(info, "LAST ID: %d", last_id);
-  write_string(info, 30, 45, 255, 255, 0);
+  print_last_order(info, last_id);
 
   s_wifi_event_group = xEventGroupCreate();
 
@@ -144,15 +149,14 @@ void app_main()
               current_status = STATUS_REQUEST_QRCODE;
               last_id++;
               save_nvs_data(&nvs_handle, last_id);
-              sprintf(info, "LAST ID: %d", last_id);
-              write_string(info, 30, 45, 255, 255, 0);
+              print_last_order(info, last_id);
             }
           } else {
             tickNumber = 0;
           }
           break;
         case STATUS_REQUEST_QRCODE:
-          http_get_qrcode(buffer);
+          http_get_qrcode(buffer, last_id);
           ESP_LOGI(TAG, "QR CODE: %s", buffer);
           ESP_LOGI(TAG, "Gerando QR Code...");
           bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
@@ -181,13 +185,24 @@ void app_main()
             write_string(info, 30, 400, 0, 255, 0);
             if (minutos == 2) {
               current_status = STATUS_WAIT_USER_INPUT;
+              segundos = minutos = horas = 0;
               tickNumber = 0;
+              set_bgcolor(0, 0, 0);
+              sprintf(info, "TEMPO ESGOTADO!!!");
+              for (uint8_t j = 0; j < 10; j++) {
+                write_string(info, 30, 20 + 17*j, 255, 0, 0);
+              }
             } else {
               if (segundos % 10 == 0) {
                 ESP_LOGI(TAG, "Verficando Pagamento");
                 order_status = http_get_order_status(1);
                 if (order_status == 1) {
                   ESP_LOGI(TAG, "Pagamento efetuado");
+                  set_bgcolor(0, 0, 0);
+                  sprintf(info, "PAGAMENTO EFETUADO!!!");
+                  for (uint8_t j = 0; j < 10; j++) {
+                    write_string(info, 30, 20 + 17*j, 0, 255, 0);
+                  }
                 } else {
                   ESP_LOGI(TAG, "Pagamento não efetuado");
                 }
