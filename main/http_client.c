@@ -49,6 +49,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
             if (output_buffer != NULL) {
                 // Response is accumulated in output_buffer. Uncomment the below line to print the accumulated response
                 // ESP_LOG_BUFFER_HEX(TAG, output_buffer, output_len);
+                ESP_LOGI(TAG, "Limpando Buffer");
                 free(output_buffer);
                 output_buffer = NULL;
             }
@@ -59,7 +60,9 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
             int mbedtls_err = 0;
             esp_err_t err = esp_tls_get_and_clear_last_error(evt->data, &mbedtls_err, NULL);
             if (err != 0) {
+                ESP_LOGE(TAG, "ERRO");
                 if (output_buffer != NULL) {
+                    ESP_LOGI(TAG, "Limpando Buffer");
                     free(output_buffer);
                     output_buffer = NULL;
                 }
@@ -99,7 +102,7 @@ void http_get_qrcode(char *buffer)
         .host = "luan.heliohost.org",
         .path = "/pix/teste",
         .event_handler = _http_event_handler,
-        .timeout_ms = 30000
+        .timeout_ms = 9000
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -132,7 +135,7 @@ uint8_t http_get_order_status(uint32_t order_id)
         .host = "luan.heliohost.org",
         .path = path,
         .event_handler = _http_event_handler,
-        .timeout_ms = 30000
+        .timeout_ms = 9000
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
