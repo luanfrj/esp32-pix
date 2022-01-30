@@ -188,9 +188,11 @@ void app_main()
               segundos = minutos = horas = 0;
               tickNumber = 0;
               set_bgcolor(0, 0, 0);
+              print_last_order(info, last_id);
+              delay_ms(100);
               sprintf(info, "TEMPO ESGOTADO!!!");
               for (uint8_t j = 0; j < 10; j++) {
-                write_string(info, 30, 20 + 17*j, 255, 0, 0);
+                write_string(info, 30, 86 + 17*j, 255, 0, 0);
               }
             } else {
               if (segundos % 10 == 0) {
@@ -199,9 +201,11 @@ void app_main()
                 if (order_status == 1) {
                   ESP_LOGI(TAG, "Pagamento efetuado");
                   set_bgcolor(0, 0, 0);
+                  print_last_order(info, last_id);
+                  delay_ms(100);
                   sprintf(info, "PAGAMENTO EFETUADO!!!");
                   for (uint8_t j = 0; j < 10; j++) {
-                    write_string(info, 30, 20 + 17*j, 0, 255, 0);
+                    write_string(info, 30, 86 + 17*j, 0, 255, 0);
                   }
                 } else {
                   ESP_LOGI(TAG, "Pagamento não efetuado");

@@ -133,7 +133,25 @@ void send_data(unsigned char data)
 void set_bgcolor(unsigned char r, unsigned char g, unsigned char b)
 {
     unsigned short i, j;
-     // write data command
+    // set cursor
+    send_command(0x2A);
+    // set start x
+    send_data(0x00);
+    send_data(0x00);
+    // set end x
+    send_data(0x01);
+    send_data(0x3F);
+    send_command(0x00);
+    
+    send_command(0x2B);
+    // set start y
+    send_data(0x00);
+    send_data(0x00);
+    // set end y
+    send_data(0x01);
+    send_data(0xDF);
+    send_command(0x00);
+    
     send_command(0x2C);
     
     // send color
