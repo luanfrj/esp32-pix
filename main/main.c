@@ -22,6 +22,7 @@
 #define STATUS_ACTUATE_ON_GPIO  3
 
 #define BUTTON_INPUT            0
+#define ATUADOR                 33
 
 #define LAST_ID_KEY             "last_id"
 
@@ -62,6 +63,9 @@ void app_main()
 {
   // Define o botão de entrada
   gpio_set_direction(BUTTON_INPUT, GPIO_MODE_INPUT);
+
+  // Define o pino do atuador como saída
+  gpio_set_direction(ATUADOR, GPIO_MODE_OUTPUT);
 
   setup_lcd_pins();
   delay_ms(100);
@@ -187,7 +191,7 @@ void app_main()
             } else {
               if (segundos % 10 == 0) {
                 ESP_LOGI(TAG, "Verficando Pagamento");
-                order_status = http_get_order_status(1);
+                order_status = http_get_order_status(last_id);
                 if (order_status == 1) {
                   ESP_LOGI(TAG, "Pagamento efetuado");
                   set_bgcolor(0, 0, 0);
@@ -197,6 +201,9 @@ void app_main()
                   for (uint8_t j = 0; j < 10; j++) {
                     write_string(info, 30, 86 + 17*j, 0, 255, 0);
                   }
+                  current_status = STATUS_WAIT_USER_INPUT;
+                  segundos = minutos = horas = 0;
+                  tickNumber = 0;
                 } else {
                   ESP_LOGI(TAG, "Pagamento não efetuado");
                 }

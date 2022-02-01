@@ -82,9 +82,13 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 void http_get_qrcode(char *buffer, uint32_t order_id)
 {
+    char query[30];
+    sprintf(query, "id=%d", order_id);
+
     esp_http_client_config_t config = {
         .host = "luan.heliohost.org",
-        .path = "/pix/teste",
+        .path = "/pix/qrcode/",
+        .query = query,
         .event_handler = _http_event_handler,
         .timeout_ms = 9000
     };
