@@ -66,6 +66,7 @@ void app_main()
 
   // Define o pino do atuador como saída
   gpio_set_direction(ATUADOR, GPIO_MODE_OUTPUT);
+  gpio_set_level(ATUADOR, )
 
   setup_lcd_pins();
   delay_ms(100);
@@ -215,8 +216,8 @@ void app_main()
           break;
       }
     } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+        ESP_LOGI(TAG, "Failed to connect to SSID:%s",
+                 EXAMPLE_ESP_WIFI_SSID);
     } else {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
