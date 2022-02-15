@@ -36,6 +36,7 @@ uint8_t order_status;
 
 bool generate_qrcode;
 bool get_order_status;
+bool primeira_vez = true;
 
 char info[30];
 
@@ -66,7 +67,9 @@ void app_main()
 
   // Define o pino do atuador como saída
   gpio_set_direction(ATUADOR, GPIO_MODE_OUTPUT);
-  gpio_set_level(ATUADOR, )
+
+  // Define a saída do atuador para 0;
+  gpio_set_level(ATUADOR, 0);
 
   setup_lcd_pins();
   delay_ms(100);
@@ -138,6 +141,13 @@ void app_main()
       switch (current_status)
       {
         case STATUS_WAIT_USER_INPUT:
+          if (primeira_vez == true) {
+            sprintf(info, "PRESSIONE O BOTAO");
+            write_string(info, 6, 86, 255, 255, 0);
+            sprintf(info, "PARA PAGAR");
+            write_string(info, 6, 106, 255, 255, 0);
+            primeira_vez = false;
+          }
           if (gpio_get_level(BUTTON_INPUT) == 0) 
           {
             if (tickNumber == 50) {
@@ -170,16 +180,13 @@ void app_main()
             if (segundos == 60) {
               segundos = 0;
               minutos++;
-              if (minutos == 60) {
-                minutos = 0;
-                horas++;
-              }
             }
             
             sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
             write_string(info, 30, 400, 0, 255, 0);
             if (minutos == 2) {
               current_status = STATUS_WAIT_USER_INPUT;
+              primeira_vez = true;
               segundos = minutos = horas = 0;
               tickNumber = 0;
               set_bgcolor(0, 0, 0);
@@ -202,13 +209,33 @@ void app_main()
                   for (uint8_t j = 0; j < 10; j++) {
                     write_string(info, 30, 86 + 17*j, 0, 255, 0);
                   }
-                  current_status = STATUS_WAIT_USER_INPUT;
+                  gpio_set_level(ATUADOR, 1);
+                  current_status = STATUS_ACTUATE_ON_GPIO;
                   segundos = minutos = horas = 0;
                   tickNumber = 0;
                 } else {
                   ESP_LOGI(TAG, "Pagamento não efetuado");
                 }
               }
+            }
+          }
+          break;
+        case STATUS_ACTUATE_ON_GPIO:
+          if (tickNumber > 1000) {
+            tickNumber = 0;
+            segundos++;
+            if (segundos == 60) {
+              segundos = 0;
+              minutos++;
+            }
+            sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
+            write_string(info, 30, 400, 0, 255, 0);
+            if (segundos == 10) {
+              current_status = STATUS_WAIT_USER_INPUT;
+              primeira_vez = true;
+              segundos = minutos = horas = 0;
+              tickNumber = 0;
+              gpio_set_level(ATUADOR, 0);
             }
           }
           break;
