@@ -104,6 +104,36 @@ void http_get_qrcode(char *buffer, uint32_t order_id)
     esp_http_client_cleanup(client);
 }
 
+void http_get_qrcode_test(char *buffer)
+{
+    esp_http_client_config_t config = {
+        .host = CONFIG_PIX_GATEWAY_HOST,
+        .path = "/pix/teste",
+        .event_handler = _http_event_handler,
+        .timeout_ms = 5000
+    };
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+
+    esp_http_client_set_method(client, HTTP_METHOD_GET);
+    esp_err_t err = esp_http_client_open(client, 0);
+
+    if (err == ESP_OK) {
+        int content_len = esp_http_client_fetch_headers(client);
+        ESP_LOGI(TAG, "content_length = %d", content_len);
+        int data_len = esp_http_client_read_response(client, buffer, content_len);
+        ESP_LOGI(TAG, "Read length = %d", data_len);
+        buffer[content_len] = 0;
+        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+    } else {
+        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+    }
+
+    esp_http_client_cleanup(client);
+}
+
 uint8_t http_get_order_status(uint32_t order_id)
 {
     char path[30];

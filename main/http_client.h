@@ -28,4 +28,6 @@ extern const char luan_eng_br_pem_end[]   asm("_binary_luan_eng_br_pem_end");
 
 void http_get_qrcode(char *buffer, uint32_t order_id);
 
+void http_get_qrcode_test(char *buffer);
+
 uint8_t http_get_order_status(uint32_t order_id);

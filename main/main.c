@@ -162,6 +162,7 @@ void app_main()
           break;
         case STATUS_REQUEST_QRCODE:
           http_get_qrcode(buffer, last_id);
+          // http_get_qrcode_test(buffer);
           ESP_LOGI(TAG, "QR CODE: %s", buffer);
           ESP_LOGI(TAG, "Gerando QR Code...");
           bool ok = qrcodegen_encodeText(buffer, tempBuffer, qrcode,
@@ -194,12 +195,13 @@ void app_main()
               delay_ms(100);
               sprintf(info, "TEMPO ESGOTADO!!!");
               for (uint8_t j = 0; j < 10; j++) {
-                write_string(info, 30, 86 + 17*j, 255, 0, 0);
+                write_string(info, 30, 136 + 17*j, 255, 0, 0);
               }
             } else {
               if (segundos % 10 == 0) {
                 ESP_LOGI(TAG, "Verficando Pagamento");
                 order_status = http_get_order_status(last_id);
+                // order_status = http_get_order_status(1);
                 if (order_status == 1) {
                   ESP_LOGI(TAG, "Pagamento efetuado");
                   set_bgcolor(0, 0, 0);
@@ -207,7 +209,7 @@ void app_main()
                   delay_ms(100);
                   sprintf(info, "PAGAMENTO EFETUADO!!!");
                   for (uint8_t j = 0; j < 10; j++) {
-                    write_string(info, 30, 86 + 17*j, 0, 255, 0);
+                    write_string(info, 30, 136 + 17*j, 0, 255, 0);
                   }
                   gpio_set_level(ATUADOR, 1);
                   current_status = STATUS_ACTUATE_ON_GPIO;
@@ -235,6 +237,8 @@ void app_main()
               primeira_vez = true;
               segundos = minutos = horas = 0;
               tickNumber = 0;
+              set_bgcolor(0, 0, 0);
+              print_last_order(info, last_id);
               gpio_set_level(ATUADOR, 0);
             }
           }
