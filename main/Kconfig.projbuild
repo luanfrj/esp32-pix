@@ -1,4 +1,10 @@
-menu "Wifi Configuration"
+menu "Project Configuration"
+
+    config PIX_GATEWAY_HOST
+        string "Hostname do Gateway"
+        default "luan.heliohost.org"
+        help
+            Define o hostname do gateway
 
     config ESP_WIFI_SSID
         string "WiFi SSID"

@@ -286,19 +286,11 @@ static void timer_configure(void)
 
 void IRAM_ATTR timer_tick_func(void *para)
 {
-  // int timer_idx = * (int *) para;
-  // uint32_t intr_status = TIMERG0.int_st_timers.val;
+  TIMERG0.hw_timer[TIMER_0].update = 1;
+  TIMERG0.int_clr_timers.t0 = 1;
 
-  // if(timer_idx == TIMER_0) 
-  // {
-  //   ESP_LOGI(TAG, "timer_idx = %d", timer_idx);
-    TIMERG0.hw_timer[TIMER_0].update = 1;
-    TIMERG0.int_clr_timers.t0 = 1;
-
-    tickNumber++;
-    TIMERG0.hw_timer[TIMER_0].config.alarm_en = 1;
-  // }
-
+  tickNumber++;
+  TIMERG0.hw_timer[TIMER_0].config.alarm_en = 1;
 }
 
 uint32_t read_nvs_data(nvs_handle_t *nvs_handle) {

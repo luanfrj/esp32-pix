@@ -86,7 +86,7 @@ void http_get_qrcode(char *buffer, uint32_t order_id)
     sprintf(query, "id=%d", order_id);
 
     esp_http_client_config_t config = {
-        .host = "luan.heliohost.org",
+        .host = CONFIG_PIX_GATEWAY_HOST,
         .path = "/pix/qrcode/",
         .query = query,
         .event_handler = _http_event_handler,
@@ -120,7 +120,7 @@ uint8_t http_get_order_status(uint32_t order_id)
     sprintf(path, "/pix/orders/%d/status", order_id);
 
     esp_http_client_config_t config = {
-        .host = "luan.heliohost.org",
+        .host = CONFIG_PIX_GATEWAY_HOST,
         .path = path,
         .event_handler = _http_event_handler,
         .timeout_ms = 9000
