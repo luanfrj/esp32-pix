@@ -2,7 +2,7 @@ menu "Project Configuration"
 
     config PIX_GATEWAY_HOST
         string "Hostname do Gateway"
-        default "luan.heliohost.org"
+        default "pix.host.com"
         help
             Define o hostname do gateway
 
