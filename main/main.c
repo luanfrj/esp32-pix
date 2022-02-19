@@ -21,7 +21,7 @@
 #define STATUS_CHECK_PAYMENT    2
 #define STATUS_ACTUATE_ON_GPIO  3
 
-#define BUTTON_INPUT            0
+#define BUTTON_INPUT            35
 #define ATUADOR                 33
 
 #define LAST_ID_KEY             "last_id"
