@@ -5,8 +5,10 @@ Este projeto foi desenvolvido usando o framework [ESP-IDF](https://github.com/es
 
 ## Configuração
 
-Antes de compilar é preciso ajustar configurações ambientais do sistema. Para isso é preciso executar o seguinte comando:
+Antes de compilar é preciso ajustar configurações ambientais do sistema. Para isso é preciso executar os seguintes comandos:
 ```
+idf.py set-target esp32
+
 idf.py menuconfig
 ```
 E ajustar os seguintes parâmetros no menu **Project Configuration**
@@ -17,7 +19,7 @@ E ajustar os seguintes parâmetros no menu **Project Configuration**
 
 ## Compilação
 
-Para compilar o código basta executar o comando a seguir na raiz do projeto:
+Para compilar o código basta executar os comandos a seguir na raiz do projeto:
 
 ```
 idf.py build

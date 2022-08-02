@@ -14,7 +14,6 @@
 #include "wifi_station.h"
 #include "http_client.h"
 #include "esp_task_wdt.h"
-#include "esp_heap_trace.h"
 
 #define STATUS_WAIT_USER_INPUT  0
 #define STATUS_REQUEST_QRCODE   1
@@ -77,8 +76,6 @@ void app_main()
   ESP_LOGI(TAG,"Iniciando LCD");
   
   init_lcd();
-
-  heap_trace_start(HEAP_TRACE_ALL);
 
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
