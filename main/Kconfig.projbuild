@@ -24,3 +24,416 @@ menu "Project Configuration"
         help
             Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
 endmenu
+
+menu "TFT Configuration"
+
+	choice DRIVER
+		prompt "Display Driver"
+		default ILI9488
+		help
+			Select Display Driver.
+		config ILI9225
+			bool "ILI9225"
+			help
+				Display Driver is ILI9225.
+		config ILI9226
+			bool "ILI9226"
+			help
+				Display Driver is ILI9226.
+				Same as ILI9225.
+		config ILI9320
+			bool "ILI9320"
+			help
+				Display Driver is ILI9320.
+		config ILI9325
+			bool "ILI9325"
+			help
+				Display Driver is ILI9325.
+		config ILI9327
+			bool "ILI9327"
+			help
+				Display Driver is ILI9327.
+		config ILI9340
+			bool "ILI9340"
+			help
+				Display Driver is ILI9340.
+				Same as ILI9340.
+		config ILI9341
+			bool "ILI9341"
+			help
+				Display Driver is ILI9341.
+		config ILI9342
+			bool "ILI9342"
+			help
+				Display Driver is ILI9342.
+		config ILI9481
+			bool "ILI9481"
+			help
+				Display Driver is ILI9481.
+		config ILI9486
+			bool "ILI9486"
+			help
+				Display Driver is ILI9486.
+				Same as ST7796.
+		config ILI9488
+			bool "ILI9488"
+			help
+				Display Driver is ILI9488.
+		config SPFD5408
+			bool "SPFD5408"
+			help
+				Display Driver is SPFD5408.
+				Same as ILI9320.
+		config R61505
+			bool "R61505"
+			help
+				Display Driver is R61505.
+				Same as ILI9320.
+		config R61509
+			bool "R61509"
+			help
+				Display Driver is R61509.
+		config LGDP4532
+			bool "LGDP4532"
+			help
+				Display Driver is LGDP4532.
+		config ST7775
+			bool "ST7775"
+			help
+				Display Driver is ST7775.
+				Same as ILI9225.
+		config ST7781
+			bool "ST7781"
+			help
+				Display Driver is ST7781.
+				Same as ST7783.
+		config ST7783
+			bool "ST7783"
+			help
+				Display Driver is ST7783.
+				Same as ST7781.
+		config ST7793
+			bool "ST7793"
+			help
+				Display Driver is ST7793.
+				Same as R61509.
+		config ST7796
+			bool "ST7796"
+			help
+				Display Driver is ST7796.
+				Same as ILI9486.
+		config S6D1121
+			bool "S6D1121"
+			help
+				Display Driver is S6D1121.
+		config HX8347A
+			bool "HX8347A"
+			help
+				Display Driver is HX8347A.
+		config HX8347D
+			bool "HX8347D"
+			help
+				Display Driver is HX8347D.
+		config HX8347G
+			bool "HX8347G"
+			help
+				Display Driver is HX8347G.
+		config HX8347I
+			bool "HX8347I"
+			help
+				Display Driver is HX8347I.
+	endchoice
+
+	choice INTERFACE
+		prompt "Parallel Interface"
+		default INTERFACE_REG
+		help
+			Select Parallel Interface.
+		config INTERFACE_I2S
+			bool "I2S Parallel Interface"
+			help
+				Parallel Interface is I2S.
+		config INTERFACE_REG
+			bool "REGISTER Parallel Interface"
+			help
+				Parallel Interface is REGISTER I/O.
+		config INTERFACE_GPIO
+			bool "GPIO Parallel Interface"
+			help
+				Parallel Interface is GPIO.
+	endchoice
+
+	config WIDTH
+		int "SCREEN WIDTH"
+		range 0 999
+		default 320
+		help
+			The width resolution of the screen.
+
+	config HEIGHT
+		int "SCREEN HEIGHT"
+		range 0 999
+		default 480
+		help
+			The height resolution of the screen.
+
+	config OFFSETX
+		int "GRAM X OFFSET"
+		range 0 99
+		default 0
+		help
+			When your TFT have offset(X), set it.
+
+	config OFFSETY
+		int "GRAM Y OFFSET"
+		range 0 99
+		default 0
+		help
+			When your TFT have offset(Y), set it.
+
+	config INVERSION
+		bool "Enable Display Inversion"
+		default false
+		help
+			Enable Display Inversion.
+
+	config CUSTOM_GPIO_CONFIG
+		bool "Enable Custom GPIO"
+		help
+			Enable Custom GPIO.
+
+	config D0_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D0 GPIO number"
+		range 0 46
+		default 12 if IDF_TARGET_ESP32
+		default 1 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D0.
+
+	config D1_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D1 GPIO number"
+		range 0 46
+		default 13 if IDF_TARGET_ESP32
+		default 2 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D1.
+
+	config D2_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D2 GPIO number"
+		range 0 46
+		default 26 if IDF_TARGET_ESP32
+		default 3 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D2.
+
+	config D3_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D3 GPIO number"
+		range 0 46
+		default 25 if IDF_TARGET_ESP32
+		default 4 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D3.
+
+	config D4_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D4 GPIO number"
+		range 0 46
+		default 17 if IDF_TARGET_ESP32
+		default 5 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D4.
+
+	config D5_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D5 GPIO number"
+		range 0 46
+		default 16 if IDF_TARGET_ESP32
+		default 6 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D5.
+
+	config D6_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D6 GPIO number"
+		range 0 46
+		default 27 if IDF_TARGET_ESP32
+		default 11 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D6.
+
+	config D7_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "D7 GPIO number"
+		range 0 46
+		default 14 if IDF_TARGET_ESP32
+		default 12 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD D7.
+
+	config RD_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "RD GPIO number"
+		range 0 46
+		default 2 if IDF_TARGET_ESP32
+		default 39 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD RD.
+
+	config WR_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "WR GPIO number"
+		range 0 46
+		default 4 if IDF_TARGET_ESP32
+		default 40 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD WR.
+
+	config RS_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "RS GPIO number"
+		range 0 46
+		default 15 if IDF_TARGET_ESP32
+		default 41 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD RS.
+
+	config CS_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "CS GPIO number"
+		range 0 46
+		default 33 if IDF_TARGET_ESP32
+		default 42 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD CS.
+
+	config RESET_GPIO
+		depends on CUSTOM_GPIO_CONFIG
+		int "RESET GPIO number"
+		range 0 46
+		default 32 if IDF_TARGET_ESP32
+		default 45 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			GPIO number (IOxx) to LCD RESET.
+
+	config ENABLE_TOUCH
+		depends on INTERFACE_REG || INTERFACE_GPIO
+		bool "Enable 4-line resistance touch screen"
+		default false
+		help
+			Enable 4-line resistance touch screen.
+
+	config ADC_CHANNEL_YP
+		depends on ENABLE_TOUCH
+		int "ADC Channel Y+"
+		default 6
+		range 3 9 if IDF_TARGET_ESP32
+		range 0 7 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			ADC Channel Y+.
+
+	config ADC_CHANNEL_XM
+		depends on ENABLE_TOUCH
+		int "ADC Channel X-"
+		default 7
+		range 3 9 if IDF_TARGET_ESP32
+		range 0 7 if IDF_TARGET_ESP32S2 || IDF_TARGET_ESP32S3
+		help
+			ADC Channel X-.
+
+	config XPT_ACCURACY
+		depends on ENABLE_TOUCH
+		int "Touch position accuracy"
+		range 2 10
+		default 5
+		help
+			Tolerance of touch position.
+			If the difference from the previous position is within this range, it is considered valid.
+			The higher the value, the less accurate the position, but the less responsive it is.
+
+	choice XP_GPIO
+		depends on ENABLE_TOUCH
+		prompt "GPIO number (IOxx) to Touch X(+)"
+		default XP_GPIO_D6
+		help
+			GPIO number (IOxx) to Touch X(+).
+		config XP_GPIO_D6
+			bool "GPIO_D6"
+			help
+				"GPIO_D6"
+		config XP_GPIO_D0
+			bool "GPIO_D0"
+			help
+				"GPIO_D0"
+		config XP_GPIO_D1
+			bool "GPIO_D1"
+			help
+				"GPIO_D1"
+	endchoice
+
+	choice XM_GPIO
+		depends on ENABLE_TOUCH
+		prompt "GPIO number (IOxx) to Touch X(-)"
+		default XM_GPIO_RS
+		help
+			GPIO number (IOxx) to Touch X(-).
+		config XM_GPIO_RS
+			bool "GPIO_RS"
+			help
+				"GPIO_D6"
+		config XM_GPIO_CS
+			bool "GPIO_CS"
+			help
+				"GPIO_CS"
+	endchoice
+
+	choice YP_GPIO
+		depends on ENABLE_TOUCH
+		prompt "GPIO number (IOxx) to Touch Y(+)"
+		default YP_GPIO_WR
+		help
+			GPIO number (IOxx) to Touch Y(+).
+		config YP_GPIO_WR
+			bool "GPIO_WR"
+			help
+				"GPIO_WR"
+		config YP_GPIO_CS
+			bool "GPIO_CS"
+			help
+				"GPIO_CS"
+		config YP_GPIO_RS
+			bool "GPIO_RS"
+			help
+				"GPIO_RS"
+	endchoice
+
+	choice YM_GPIO
+		depends on ENABLE_TOUCH
+		prompt "GPIO number (IOxx) to Touch Y(-)"
+		default YM_GPIO_D7
+		help
+			GPIO number (IOxx) to Touch Y(-).
+		config YM_GPIO_D0
+			bool "GPIO_D0"
+			help
+				"GPIO_D0"
+		config YM_GPIO_D1
+			bool "GPIO_D1"
+			help
+				"GPIO_D1"
+		config YM_GPIO_D7
+			bool "GPIO_D7"
+			help
+				"GPIO_D7"
+	endchoice
+
+	config SWAP_XY
+		bool "Swap X and Y coordinates"
+		default false
+		help
+			Swap X and Y coordinates.
+endmenu
+
