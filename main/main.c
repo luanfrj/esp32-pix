@@ -400,7 +400,6 @@ void app_main()
               tickNumber = 0;
               // set_bgcolor(0, 0, 0);
               // print_last_order(info, last_id);
-              delay_ms(100);
               sprintf(info, "TEMPO ESGOTADO!!!");
               // for (uint8_t j = 0; j < 10; j++) {
               //   write_string(info, 30, 136 + 17*j, 255, 0, 0);
@@ -414,7 +413,6 @@ void app_main()
                   ESP_LOGI(TAG, "Pagamento efetuado");
                   //set_bgcolor(0, 0, 0);
                   // print_last_order(info, last_id);
-                  delay_ms(100);
                   sprintf(info, "PAGAMENTO EFETUADO!!!");
                   // for (uint8_t j = 0; j < 10; j++) {
                   //   write_string(info, 30, 136 + 17*j, 0, 255, 0);
