@@ -190,6 +190,14 @@ uint32_t last_id;
 
 static const char *TAG = "Main";
 
+FontxFile fx16G[2];
+FontxFile fx24G[2];
+FontxFile fx32G[2];
+
+FontxFile fx16M[2];
+FontxFile fx24M[2];
+FontxFile fx32M[2];
+
 void IRAM_ATTR timer_tick_func(void *para);
 
 static void print_qrcode(TFT_t* dev, const uint8_t qrcode[]);
@@ -200,11 +208,11 @@ uint32_t read_nvs_data(nvs_handle_t *nvs_handle);
 
 void save_nvs_data(nvs_handle_t *nvs_handle, uint32_t data);
 
-// void print_last_order(char * info, uint32_t last_order)
-// {
-//   sprintf(info, "Ultima Compra: %d", last_order);
-//   write_string(info, 10, 465, 0, 0, 255);
-// }
+void print_last_order(TFT_t* dev, char * info, uint32_t last_order)
+{
+  sprintf(info, "Ultima Compra: %d", last_order);
+  lcdDrawString(dev, fx24G, 10, 460, (uint8_t *) info, BLUE);
+}
 
 static void SPIFFS_Directory(char * path) {
 	DIR* dir = opendir(path);
@@ -269,16 +277,11 @@ void app_main()
   // init_lcd();
 
   	// set font file
-	FontxFile fx16G[2];
-	FontxFile fx24G[2];
-	FontxFile fx32G[2];
+
 	InitFontx(fx16G,"/spiffs/ILGH16XB.FNT",""); // 8x16Dot Gothic
 	InitFontx(fx24G,"/spiffs/ILGH24XB.FNT",""); // 12x24Dot Gothic
 	InitFontx(fx32G,"/spiffs/ILGH32XB.FNT",""); // 16x32Dot Gothic
 
-	FontxFile fx16M[2];
-	FontxFile fx24M[2];
-	FontxFile fx32M[2];
 	InitFontx(fx16M,"/spiffs/ILMH16XB.FNT",""); // 8x16Dot Mincyo
 	InitFontx(fx24M,"/spiffs/ILMH24XB.FNT",""); // 12x24Dot Mincyo
 	InitFontx(fx32M,"/spiffs/ILMH32XB.FNT",""); // 16x32Dot Mincyo
@@ -287,6 +290,14 @@ void app_main()
 	lcd_interface_cfg(&dev, INTERFACE);
 
 	INIT_FUNCTION(&dev, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY);
+
+  // Preenche o LCD com o Fundo Preto
+  lcdFillScreen(&dev, BLACK);
+
+  // Define a direção da dos textos
+  lcdSetFontDirection(&dev, 0);
+
+  lcdSetFontFill(&dev, BLACK);
 
   ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -307,14 +318,12 @@ void app_main()
 
   last_id = read_nvs_data(&nvs_handle);
 
-  // print_last_order(info, last_id);
+  print_last_order(&dev, info, last_id);
 
   s_wifi_event_group = xEventGroupCreate();
 
   ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
   wifi_init_sta();
-
-  // write_string("WiFi Conectado", 10, 10, 255, 255, 255);
 
   char *buffer;
   buffer = (char *) malloc(300);
@@ -351,9 +360,9 @@ void app_main()
         case STATUS_WAIT_USER_INPUT:
           if (primeira_vez == true) {
             sprintf(info, "PRESSIONE O BOTAO");
-            //write_string(info, 6, 86, 255, 255, 0);
+            lcdDrawString(&dev, fx24G, 6, 46, (uint8_t *) info, YELLOW);
             sprintf(info, "PARA PAGAR");
-            //write_string(info, 6, 106, 255, 255, 0);
+            lcdDrawString(&dev, fx24G, 6, 76, (uint8_t *) info, YELLOW);
             primeira_vez = false;
           }
           if (gpio_get_level(BUTTON_INPUT) == 0) 
@@ -362,7 +371,7 @@ void app_main()
               current_status = STATUS_REQUEST_QRCODE;
               last_id++;
               save_nvs_data(&nvs_handle, last_id);
-              // print_last_order(info, last_id);
+              print_last_order(&dev, info, last_id);
             }
           } else {
             tickNumber = 0;
@@ -391,32 +400,30 @@ void app_main()
               minutos++;
             }
             
-            // sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
-            // write_string(info, 30, 400, 0, 255, 0);
+            sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
+            lcdDrawString(&dev, fx16G, 30, 420, (uint8_t *) info, GREEN);
+
             if (minutos == 2) {
               current_status = STATUS_WAIT_USER_INPUT;
               primeira_vez = true;
               segundos = minutos = horas = 0;
               tickNumber = 0;
-              // set_bgcolor(0, 0, 0);
-              // print_last_order(info, last_id);
+              // Preenche o LCD com o Fundo Preto
+              lcdFillScreen(&dev, BLACK);
+              print_last_order(&dev, info, last_id);
               sprintf(info, "TEMPO ESGOTADO!!!");
-              // for (uint8_t j = 0; j < 10; j++) {
-              //   write_string(info, 30, 136 + 17*j, 255, 0, 0);
-              // }
+              lcdDrawString(&dev, fx32G, 30, 136, (uint8_t *) info, RED);
             } else {
               if (segundos % 10 == 0) {
                 ESP_LOGI(TAG, "Verficando Pagamento");
                 order_status = http_get_order_status(last_id);
-                // order_status = http_get_order_status(1);
                 if (order_status == 1) {
                   ESP_LOGI(TAG, "Pagamento efetuado");
-                  //set_bgcolor(0, 0, 0);
-                  // print_last_order(info, last_id);
+                  // Preenche o LCD com o Fundo Preto
+                  lcdFillScreen(&dev, BLACK);
+                  print_last_order(&dev, info, last_id);
                   sprintf(info, "PAGAMENTO EFETUADO!!!");
-                  // for (uint8_t j = 0; j < 10; j++) {
-                  //   write_string(info, 30, 136 + 17*j, 0, 255, 0);
-                  // }
+                  lcdDrawString(&dev, fx32G, 30, 136, (uint8_t *) info, GREEN);
                   gpio_set_level(ATUADOR, 1);
                   current_status = STATUS_ACTUATE_ON_GPIO;
                   segundos = minutos = horas = 0;
@@ -437,14 +444,15 @@ void app_main()
               minutos++;
             }
             sprintf(info, "%02d:%02d:%02d", horas, minutos, segundos);
-            //write_string(info, 30, 400, 0, 255, 0);
+            lcdDrawString(&dev, fx16G, 30, 420, (uint8_t *) info, GREEN);
             if (segundos == 10) {
               current_status = STATUS_WAIT_USER_INPUT;
               primeira_vez = true;
               segundos = minutos = horas = 0;
               tickNumber = 0;
-              // set_bgcolor(0, 0, 0);
-              // print_last_order(info, last_id);
+              // Preenche o LCD com o Fundo Preto
+              lcdFillScreen(&dev, BLACK);
+              print_last_order(&dev, info, last_id);
               gpio_set_level(ATUADOR, 0);
             }
           }
