@@ -11,11 +11,13 @@ idf.py set-target esp32
 
 idf.py menuconfig
 ```
-E ajustar os seguintes parâmetros no menu **Project Configuration**
+E ajustar os seguintes parâmetros no menu **PIX Configuration**
 
 1. PIX_GATEWAY_HOST: _hostname_ do gateway;
 2. ESP_WIFI_SSID: nome da conexão wifi;
 3. ESP_WIFI_PASSWORD: senha da conexão wifi;
+
+
 
 ## Compilação
 
