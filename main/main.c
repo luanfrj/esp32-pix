@@ -24,6 +24,8 @@
 #include "lcd_lib.h"
 #include "fontx.h"
 
+#include "sdcard.h"
+
 #if CONFIG_INTERFACE_I2S
 #define INTERFACE INTERFACE_I2S
 #elif CONFIG_INTERFACE_GPIO
@@ -168,7 +170,7 @@
 #define STATUS_ACTUATE_ON_GPIO  3
 
 #define BUTTON_INPUT            35
-#define ATUADOR                 33
+#define ATUADOR                 15
 
 #define LAST_ID_KEY             "last_id"
 
@@ -259,6 +261,10 @@ void app_main()
 	}
 
 	SPIFFS_Directory("/spiffs/");
+
+  sdmmc_card_t card;
+
+  sdcard_init(&card);
 
   // Define o botão de entrada
   gpio_set_direction(BUTTON_INPUT, GPIO_MODE_INPUT);
@@ -461,10 +467,10 @@ void app_main()
           break;
       }
     } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s",
-                 EXAMPLE_ESP_WIFI_SSID);
+        // ESP_LOGI(TAG, "Failed to connect to SSID:%s",
+                //  EXAMPLE_ESP_WIFI_SSID);
     } else {
-        ESP_LOGE(TAG, "UNEXPECTED EVENT");
+        // ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
 
 
