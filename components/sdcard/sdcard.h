@@ -20,3 +20,5 @@
 #endif
 
 void sdcard_init(sdmmc_card_t *card);
+
+void sdcard_load_config(char* wifi_ssid, char* wifi_password);

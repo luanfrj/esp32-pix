@@ -1,0 +1,29 @@
+menu "WIFI Configuration"
+
+    config LOAD_FROM_SD_CARD
+        bool "Load WiFi SSID and Password from SD Card"
+        default n
+        help
+            If this config item is set, WiFi SSID and Password will be loaded from SD Card.
+
+    config ESP_WIFI_SSID
+        depends on !LOAD_FROM_SD_CARD
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the example to connect to.
+
+    config ESP_WIFI_PASSWORD
+        depends on !LOAD_FROM_SD_CARD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the example to use.
+
+    config ESP_MAXIMUM_RETRY
+        int "Maximum retry"
+        default 5
+        help
+            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
+endmenu
+

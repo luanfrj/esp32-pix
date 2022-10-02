@@ -26,7 +26,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
-void wifi_init_sta(void)
+void wifi_init_sta(char* wifi_ssid, char* wifi_password)
 {
     ESP_ERROR_CHECK(esp_netif_init());
 
@@ -51,8 +51,6 @@ void wifi_init_sta(void)
 
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = EXAMPLE_ESP_WIFI_SSID,
-            .password = EXAMPLE_ESP_WIFI_PASS,
             /* Setting a password implies station will connect to all security modes including WEP/WPA.
              * However these modes are deprecated and not advisable to be used. Incase your Access point
              * doesn't support WPA2, these mode can be enabled by commenting below line */
@@ -64,6 +62,10 @@ void wifi_init_sta(void)
             },
         },
     };
+
+    strcpy((char*) wifi_config.sta.ssid, (char *) wifi_ssid);
+    strcpy((char*) wifi_config.sta.password, (char *) wifi_password);
+
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     ESP_ERROR_CHECK(esp_wifi_start() );

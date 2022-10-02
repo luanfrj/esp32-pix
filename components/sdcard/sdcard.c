@@ -68,3 +68,28 @@ void sdcard_init(sdmmc_card_t *card)
     sdmmc_card_print_info(stdout, card);
 
 }
+
+void sdcard_load_config(char* wifi_ssid, char* wifi_password)
+{
+     // First create a file.
+    const char *file_config = MOUNT_POINT"/config.txt";
+
+    // Open renamed file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_config);
+    FILE *f = fopen(file_config, "r");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return;
+    }
+    fscanf(f, "%[^\n]", wifi_ssid);
+    fgetc(f);
+    fscanf(f, "%[^\n]", wifi_password);
+
+    fclose(f);
+    ESP_LOGI(TAG, "File config read");
+}
+
+void sdcard_close(sdmmc_card_t *card)
+{
+    
+}

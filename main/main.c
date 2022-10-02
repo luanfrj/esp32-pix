@@ -262,9 +262,21 @@ void app_main()
 
 	SPIFFS_Directory("/spiffs/");
 
+#ifdef CONFIG_LOAD_FROM_SD_CARD
+  ESP_LOGI(TAG, "Carregando configurações do Cartão Micro SD");
+  
   sdmmc_card_t card;
-
   sdcard_init(&card);
+
+  char wifi_ssid[32];
+  char wifi_password[64];
+
+  sdcard_load_config(wifi_ssid, wifi_password);
+
+#else
+  char wifi_ssid[] = CONFIG_ESP_WIFI_SSID;
+  char wifi_password[] = CONFIG_ESP_WIFI_PASSWORD;
+#endif
 
   // Define o botão de entrada
   gpio_set_direction(BUTTON_INPUT, GPIO_MODE_INPUT);
@@ -329,7 +341,7 @@ void app_main()
   s_wifi_event_group = xEventGroupCreate();
 
   ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
-  wifi_init_sta();
+  wifi_init_sta(wifi_ssid, wifi_password);
 
   char *buffer;
   buffer = (char *) malloc(300);

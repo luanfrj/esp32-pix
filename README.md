@@ -11,13 +11,25 @@ idf.py set-target esp32
 
 idf.py menuconfig
 ```
-E ajustar os seguintes parâmetros no menu **PIX Configuration**
+No menu **PIX Configuration** ajuste a configuração de conexão com o pix:
 
 1. PIX_GATEWAY_HOST: _hostname_ do gateway;
+
+No menu **WIFI Configuration** ajuste a configuração de conexão WiFi:
+
+1. LOAD_FROM_SD_CARD: Define se a configuração do WiFi será feita via arquivo ou via menuconfig;
 2. ESP_WIFI_SSID: nome da conexão wifi;
 3. ESP_WIFI_PASSWORD: senha da conexão wifi;
 
+Caso a configuração seja feita via arquivo é preciso colocar o arquivo config.txt na raiz do cartão SD contendo duas linhas, a primeira com o SSID e a segunda com a Senha.
+```
+SSID
+senha
+```
 
+No menu **SD CARD SPI Configuration** ajuste a pinagem de conexão com o SD Card.
+
+No menu **TFT Configuration** escolha o driver e a pinagem do display LCD.
 
 ## Compilação
 
