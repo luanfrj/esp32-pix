@@ -39,13 +39,14 @@ Para compilar o código basta executar os comandos a seguir na raiz do projeto:
 idf.py build
 ```
 
-## Arquivos principais
+## Módulos principais
 
-1. main.c: código principal do _firmware_;
-2. ili9488.c: bibliteca para comunicação com o LCD;
-3. qrcodegen.c: biblioteca usada para gerar o QR Code;
-http_client.c: biblioteca para encapsular as chamadas HTTP ao _gateway_;
-4. wifi_station.c: biblioteca que encapsula as configurações do adaptador wifi;
+1. main: código principal do _firmware_;
+2. tft_library: Biblioteca para comunição o display LCD. Desenvolvida por https://github.com/nopnop2002/esp-idf-parallel-tft;
+3. qrcodegen: biblioteca usada para gerar o QR Code;
+4. http_client: biblioteca para encapsular as chamadas HTTP ao _gateway_;
+5. wifi_station: biblioteca que encapsula as configurações do adaptador wifi;
+6. sdcard: biblioteca para comunicar com o cartão sd e ler o arquivo de configuração;
 
 ## Funcionamento
 
