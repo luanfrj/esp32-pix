@@ -85,6 +85,14 @@ void sdcard_load_config(char* wifi_ssid, char* wifi_password)
     fgetc(f);
     fscanf(f, "%[^\n]", wifi_password);
 
+    if (wifi_ssid[strlen(wifi_ssid) - 1] == '\r') {
+        wifi_ssid[strlen(wifi_ssid) - 1] = '\0';
+    }
+
+    if (wifi_password[strlen(wifi_password) - 1] == '\r') {
+        wifi_password[strlen(wifi_password) - 1] = '\0';
+    }
+
     fclose(f);
     ESP_LOGI(TAG, "File config read");
 }
