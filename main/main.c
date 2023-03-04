@@ -371,8 +371,6 @@ void app_main()
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
-        // ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-        //          EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
       switch (current_status)
       {
         case STATUS_WAIT_USER_INPUT:
@@ -482,11 +480,8 @@ void app_main()
       if (primeira_vez == true) {
         sprintf(info, "Falha ao conectar ao WiFi!!!");
         lcdDrawString(&dev, fx32G, 30, 136, (uint8_t *) info, RED);
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s", EXAMPLE_ESP_WIFI_SSID);
         primeira_vez = false;
       }
-        // ESP_LOGI(TAG, "Failed to connect to SSID:%s",
-                //  EXAMPLE_ESP_WIFI_SSID);
     } else {
         // ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
