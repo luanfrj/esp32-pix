@@ -13,7 +13,8 @@ idf.py menuconfig
 ```
 No menu **PIX Configuration** ajuste a configuração de conexão com o pix:
 
-1. PIX_GATEWAY_HOST: _hostname_ do gateway;
+1. PIX_GATEWAY_HOST: _hostname_ do _gateway_;
+2. HOST_USE_HTTPS: Define se as chamadas ao _gateway_ usarão ou não HTTPS;
 
 No menu **WIFI Configuration** ajuste a configuração de conexão WiFi:
 
@@ -42,8 +43,8 @@ idf.py build
 ## Módulos principais
 
 1. main: código principal do _firmware_;
-2. tft_library: Biblioteca para comunição o display LCD. Desenvolvida por https://github.com/nopnop2002/esp-idf-parallel-tft;
-3. qrcodegen: biblioteca usada para gerar o QR Code;
+2. tft_library: Biblioteca para comunição o display LCD. Desenvolvida por nopnop2002, https://github.com/nopnop2002/esp-idf-parallel-tft;
+3. qrcodegen: biblioteca usada para gerar o QR Code. Desenvolvida por nayuki, https://github.com/nayuki/QR-Code-generator/tree/master/c;
 4. http_client: biblioteca para encapsular as chamadas HTTP ao _gateway_;
 5. wifi_station: biblioteca que encapsula as configurações do adaptador wifi;
 6. sdcard: biblioteca para comunicar com o cartão sd e ler o arquivo de configuração;
