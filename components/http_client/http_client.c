@@ -77,6 +77,9 @@ void http_get_qrcode(char *buffer, uint32_t order_id)
 
     esp_http_client_config_t config = {
         .host = CONFIG_PIX_GATEWAY_HOST,
+    #if CONFIG_HOST_USE_HTTPS
+        .transport_type = HTTP_TRANSPORT_OVER_SSL,
+    #endif
         .path = "/pix-gateway/v1/qrcode/",
         .query = query,
         .event_handler = _http_event_handler,
@@ -108,6 +111,9 @@ void http_get_qrcode_test(char *buffer)
 {
     esp_http_client_config_t config = {
         .host = CONFIG_PIX_GATEWAY_HOST,
+    #if CONFIG_HOST_USE_HTTPS
+        .transport_type = HTTP_TRANSPORT_OVER_SSL,
+    #endif
         .path = "/pix-gateway/v1/teste",
         .event_handler = _http_event_handler,
         .timeout_ms = 5000
@@ -141,6 +147,9 @@ uint8_t http_get_order_status(uint32_t order_id)
 
     esp_http_client_config_t config = {
         .host = CONFIG_PIX_GATEWAY_HOST,
+    #if CONFIG_HOST_USE_HTTPS
+        .transport_type = HTTP_TRANSPORT_OVER_SSL,
+    #endif
         .path = path,
         .event_handler = _http_event_handler,
         .timeout_ms = 9000

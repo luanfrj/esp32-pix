@@ -6,5 +6,11 @@ menu "PIX Configuration"
         help
             Define o hostname do gateway
 
+    config HOST_USE_HTTPS
+        bool "Usar HTTPS"
+        default y
+        help
+            Se este item estiver setado as chamadas ao Gateway serão feitas com HTTPS
+
 endmenu
 
